@@ -1,0 +1,5 @@
+{
+    "NO_VERTIPORT_AVAILABLE_SRC": "No vertiport available for the pickup location",
+    "NO_VERTIPORT_AVAILABLE_DEST": "No vertiport available for the dropoff location",
+    "NO_VERTIPORT_AVAILABLE": "No vertiport available for both the pickup and dropoff locations"
+}
