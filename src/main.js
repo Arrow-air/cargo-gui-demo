@@ -1,5 +1,6 @@
 import { createApp } from "vue";
 import App from "./App.vue";
+import Vue3Lottie from "vue3-lottie";
 import VCalendar from "v-calendar";
 import "v-calendar/dist/style.css";
 import BalmUI from "balm-ui"; // Official Google Material Components
@@ -16,7 +17,7 @@ script.setAttribute(
 script.setAttribute("defer", "true");
 document.head.appendChild(script);
 
-const app = createApp(App).use(BalmUI).use(VCalendar);
+const app = createApp(App).use(BalmUI).use(VCalendar).use(Vue3Lottie);
 app.provide("google", window.google);
 
 app.mount("#app");

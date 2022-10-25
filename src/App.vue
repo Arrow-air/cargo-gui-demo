@@ -5,6 +5,8 @@ import "./assets/main.css";
 import "./assets/base.css";
 import NavBar from "./components/NavBar.vue";
 import ClientHelperBox from "./components/ClientHelperBox.vue";
+import * as cargoService from "./helpers/cargoService.js";
+import s from "./assets/s.json";
 
 const pickUpLocation = ref("");
 const pickUpLocations = ref([]);
@@ -18,8 +20,46 @@ const googlePlacesService = ref(null);
 
 const quotes = ref([]);
 const fetchedQuotes = ref(false);
+const fetchingQuotes = ref(false);
 
-const handleClick = () => {};
+const errorMessage = ref("");
+
+const handleClick = async () => {
+  fetchingQuotes.value = true;
+  const pickUpVertiports = await cargoService.getVertiports(
+    pickUpLocationCoordinates.value.value[0],
+    pickUpLocationCoordinates.value.value[1]
+  );
+  const dropOffVertiports = await cargoService.getVertiports(
+    dropOffLocationCoordinates.value.value[0],
+    dropOffLocationCoordinates.value.value[1]
+  );
+
+  switch (true) {
+    case pickUpVertiports.length === 0 && dropOffVertiports.length !== 0:
+      fetchingQuotes.value = false;
+      errorMessage.value = s.NO_VERTIPORT_AVAILABLE_SRC;
+      break;
+    case dropOffVertiports.length === 0 && pickUpVertiports.length !== 0:
+      fetchingQuotes.value = false;
+      errorMessage.value = s.NO_VERTIPORT_AVAILABLE_DEST;
+      break;
+    case dropOffVertiports.length === 0 && pickUpVertiports.length === 0:
+      fetchingQuotes.value = false;
+      errorMessage.value = s.NO_VERTIPORT_AVAILABLE;
+      break;
+    default:
+      fetchingQuotes.value = true;
+      quotes.value = await cargoService.getQuotes(
+        pickUpVertiports,
+        dropOffVertiports
+      );
+      fetchingQuotes.value = false;
+      fetchedQuotes.value = true;
+      break;
+  }
+  fetchingQuotes.value = false;
+};
 
 const displaySuggestions = (locations) => (predictions, status) => {
   if (status !== window.google.maps.places.PlacesServiceStatus.OK) {
@@ -73,6 +113,7 @@ const searchLocation = (location, locations) => {
 <template>
   <div class="min-h-screen bg-slate-200">
     <NavBar />
+
     <div class="flex flex-col justify-center items-center">
       <div class="flex flex-1 mt-10">
         <div v-if="fetchedQuotes">
@@ -82,7 +123,7 @@ const searchLocation = (location, locations) => {
         <div v-else class="w-[50vw]">
           <h1 class="font-black text-3xl pb-5">Create shipment</h1>
           <div
-            class="bg-white flex flex-wrap flex-col justify-center rounded-xl shadow-lg z-30 p-2 mb-20"
+            class="bg-white flex flex-wrap flex-col justify-center rounded-xl shadow-lg z-10 p-2 mb-20"
           >
             <div class="flex justify-center flex-wrap">
               <ui-autocomplete
@@ -114,6 +155,17 @@ const searchLocation = (location, locations) => {
                 >Drop off location</ui-autocomplete
               >
             </div>
+
+            <div class="flex justify-center w-full">
+              <ui-alert
+                class="flex justify-center w-[20rem] mx-4"
+                state="warning"
+                v-if="errorMessage"
+                closable
+                >{{ errorMessage }}</ui-alert
+              >
+            </div>
+
             <div class="flex justify-center my-2">
               <button
                 class="bg-black hover:bg-slate-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:hover:bg-black"
@@ -123,7 +175,7 @@ const searchLocation = (location, locations) => {
                   !dropOffLocationCoordinates.value
                 "
               >
-                Get quotes
+                {{ fetchingQuotes ? "fetching..." : "Get quotes" }}
               </button>
             </div>
           </div>
