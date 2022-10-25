@@ -50,10 +50,7 @@ const handleClick = async () => {
       break;
     default:
       fetchingQuotes.value = true;
-      quotes.value = await cargoService.getQuotes(
-        pickUpVertiports,
-        dropOffVertiports
-      );
+      quotes.value = "CALL SOME FUNCTIONS";
       fetchingQuotes.value = false;
       fetchedQuotes.value = true;
       break;
